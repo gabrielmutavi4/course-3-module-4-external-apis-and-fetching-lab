@@ -8,37 +8,46 @@ const button = document.getElementById("fetch-button");
 const displayDiv = document.getElementById("alerts-display");
 const errorDiv = document.getElementById("error-message");
 
-// ✅ IMPORTANT FIX
-if (button) {
-  button.addEventListener("click", async () => {
-    try {
-      displayDiv.innerHTML = "";
-      errorDiv.textContent = "";
-      errorDiv.classList.add("hidden");
+async function fetchWeatherAlerts() {
+  try {
+    displayDiv.innerHTML = "";
+    errorDiv.textContent = "";
+    errorDiv.classList.add("hidden");
 
-      const response = await fetch(
-        `https://api.weather.gov/alerts/active?area=${input.value}`
-      );
+    const state = input.value;
 
-      const data = await response.json();
+    const response = await fetch(
+      `https://api.weather.gov/alerts/active?area=${state}`
+    );
 
-      const alerts = data.features || [];
+    const data = await response.json();
 
-      const summary = document.createElement("h2");
-      summary.textContent = `Weather Alerts: ${alerts.length}`;
-      displayDiv.appendChild(summary);
+    const alerts = data.features || [];
 
-      alerts.forEach(alert => {
-        const p = document.createElement("p");
-        p.textContent = alert.properties.headline;
-        displayDiv.appendChild(p);
-      });
+    const summary = document.createElement("h2");
+    summary.textContent = `Weather Alerts: ${alerts.length}`;
+    displayDiv.appendChild(summary);
 
-      input.value = "";
+    alerts.forEach(alert => {
+      const p = document.createElement("p");
+      p.textContent = alert.properties.headline;
+      displayDiv.appendChild(p);
+    });
 
-    } catch (error) {
-      errorDiv.textContent = error.message;
-      errorDiv.classList.remove("hidden");
-    }
-  });
+    input.value = "";
+
+    return data;
+
+  } catch (error) {
+    errorDiv.textContent = error.message;
+    errorDiv.classList.remove("hidden");
+
+    return error;
+  }
 }
+
+if (button) {
+  button.addEventListener("click", fetchWeatherAlerts);
+}
+
+module.exports = { fetchWeatherAlerts };
