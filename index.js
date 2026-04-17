@@ -3,51 +3,33 @@ const weatherApi = "https://api.weather.gov/alerts/active?area="
 
 // Your code here!
 
-const input = document.getElementById("state-input");
-const button = document.getElementById("fetch-button");
-const displayDiv = document.getElementById("alerts-display");
-const errorDiv = document.getElementById("error-message");
+const stateInput = document.getElementById("state-input");
+const fetchButton = document.getElementById("fetch-alerts");
+const alertDisplay = document.getElementById("alerts-display");
+const errorMessage = document.getElementById("error-message");
 
-async function fetchWeatherAlerts() {
-  try {
-    displayDiv.innerHTML = "";
-    errorDiv.textContent = "";
-    errorDiv.classList.add("hidden");
+fetchButton.addEventListener("click", async () => {
+    const state = stateInput.value.trim();
+    if (!state) return
+        
+      errorMessage.classList.add("hidden");
+      errorMessage.textContent = "";
 
-    const state = input.value;
+    try {
+      const res = await fetch(weatherApi + state);
+        if (!res.ok) {
+            throw new Error("fetch failed");
+            }
+      const data = await res.json();
 
-    const response = await fetch(
-      `https://api.weather.gov/alerts/active?area=${state}`
-    );
-
-    const data = await response.json();
-
-    const alerts = data.features || [];
-
-    const summary = document.createElement("h2");
-    summary.textContent = `Weather Alerts: ${alerts.length}`;
-    displayDiv.appendChild(summary);
-
-    alerts.forEach(alert => {
-      const p = document.createElement("p");
-      p.textContent = alert.properties.headline;
-      displayDiv.appendChild(p);
-    });
-
-    input.value = "";
-
-    return data;
-
-  } catch (error) {
-    errorDiv.textContent = error.message;
-    errorDiv.classList.remove("hidden");
-
-    return error;
-  }
-}
-
-if (button) {
-  button.addEventListener("click", fetchWeatherAlerts);
-}
-
-module.exports = { fetchWeatherAlerts };
+        alertDisplay.textContent = `Weather Alerts: ${data.features.length}`;
+        data.features.forEach(alert => {
+        alertDisplay.textContent += `\n- ${alert.properties.headline}`;
+        });
+            stateInput.value = "";
+        }  
+        catch (error) {  
+            errorMessage.textContent = error.message;
+            errorMessage.classList.remove("hidden");
+        }
+});
